@@ -12,33 +12,38 @@ import Header from './Header';
 import ProgressBar from './ProgressBar';
 import QuestionCard from './QuestionCard';
 import ResultView from './ResultView';
+import ScreenBackground from './ScreenBackground';
 
 interface Props {
   title: string;
   emoji: string;
   makeRounds: () => QuizRound[];
   kind: 'practice' | 'game';
-  /** Hiển thị đáp án cỡ chữ to (cho chữ cái, emoji). */
+  /** Hiển thị đáp án cỡ chữ to (cho chữ cái, số). */
   bigOptions?: boolean;
+  /** Đáp án là emoji → hiển thị bằng hình OpenMoji. */
+  emojiOptions?: boolean;
 }
 
 /** Màn chơi trắc nghiệm dùng chung cho luyện tập và các mini game. */
-export default function QuizPlay({ title, emoji, makeRounds, kind, bigOptions }: Props) {
+export default function QuizPlay({ title, emoji, makeRounds, kind, bigOptions, emojiOptions }: Props) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const quiz = useQuiz(makeRounds, kind);
 
   if (quiz.finished) {
     return (
-      <View style={globalStyles.screen}>
-        <Header title={title} emoji={emoji} />
-        <ResultView
-          correct={quiz.score}
-          total={quiz.total}
-          stars={starsFor(quiz.score, quiz.total)}
-          onReplay={quiz.replay}
-          onHome={() => navigation.navigate('Home')}
-        />
-      </View>
+      <ScreenBackground>
+        <View style={globalStyles.screen}>
+          <Header title={title} emoji={emoji} />
+          <ResultView
+            correct={quiz.score}
+            total={quiz.total}
+            stars={starsFor(quiz.score, quiz.total)}
+            onReplay={quiz.replay}
+            onHome={() => navigation.navigate('Home')}
+          />
+        </View>
+      </ScreenBackground>
     );
   }
 
@@ -52,30 +57,33 @@ export default function QuizPlay({ title, emoji, makeRounds, kind, bigOptions }:
   }
 
   return (
-    <View style={globalStyles.screen}>
-      <Header title={title} emoji={emoji} />
-      <View style={[globalStyles.content, styles.body]}>
-        <ProgressBar current={quiz.index + 1} total={quiz.total} />
-        <QuestionCard prompt={quiz.round.prompt} display={quiz.round.display} />
-        <View style={styles.options}>
-          {quiz.round.options.map(option => (
-            <AnswerOption
-              key={option}
-              label={option}
-              big={bigOptions}
-              state={stateFor(option)}
-              disabled={quiz.selected !== null}
-              onPress={() => quiz.answer(option)}
-            />
-          ))}
-        </View>
-        <View style={styles.feedbackArea}>
-          {quiz.feedback && (
-            <FeedbackBanner message={quiz.feedback.message} correct={quiz.feedback.correct} />
-          )}
+    <ScreenBackground>
+      <View style={globalStyles.screen}>
+        <Header title={title} emoji={emoji} />
+        <View style={[globalStyles.content, styles.body]}>
+          <ProgressBar current={quiz.index + 1} total={quiz.total} />
+          <QuestionCard prompt={quiz.round.prompt} display={quiz.round.display} />
+          <View style={styles.options}>
+            {quiz.round.options.map(option => (
+              <AnswerOption
+                key={option}
+                label={option}
+                big={bigOptions}
+                emoji={emojiOptions}
+                state={stateFor(option)}
+                disabled={quiz.selected !== null}
+                onPress={() => quiz.answer(option)}
+              />
+            ))}
+          </View>
+          <View style={styles.feedbackArea}>
+            {quiz.feedback && (
+              <FeedbackBanner message={quiz.feedback.message} correct={quiz.feedback.correct} />
+            )}
+          </View>
         </View>
       </View>
-    </View>
+    </ScreenBackground>
   );
 }
 

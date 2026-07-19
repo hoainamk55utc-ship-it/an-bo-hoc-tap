@@ -3,7 +3,9 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { COLORS } from '../styles/colors';
 import { globalStyles } from '../styles/global';
+import { FONTS } from '../styles/theme';
 import { speak } from '../utils/speech';
+import Emoji from './Emoji';
 import KidButton from './KidButton';
 
 interface Props {
@@ -29,11 +31,12 @@ export default function ResultView({ correct, total, stars, onReplay, onHome }: 
 
   return (
     <View style={styles.container}>
-      <Text style={styles.bigEmoji}>{stars >= 3 ? '🏆' : stars === 2 ? '🎉' : '💪'}</Text>
-      <Text style={styles.stars}>
-        {'⭐'.repeat(Math.max(stars, 0))}
-        {'☆'.repeat(Math.max(3 - stars, 0))}
-      </Text>
+      <Emoji char={stars >= 3 ? '🏆' : stars === 2 ? '🎉' : '💪'} size={110} />
+      <View style={styles.starsRow}>
+        {[0, 1, 2].map(i => (
+          <Emoji key={i} char={i < stars ? '⭐' : '☆'} size={40} style={styles.star} />
+        ))}
+      </View>
       <Text style={globalStyles.title}>
         Bé đúng {correct}/{total} câu
       </Text>
@@ -52,11 +55,12 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 12,
   },
-  bigEmoji: {
-    fontSize: 80,
+  starsRow: {
+    flexDirection: 'row',
+    gap: 6,
   },
-  stars: {
-    fontSize: 44,
+  star: {
+    marginHorizontal: 2,
   },
   message: {
     marginBottom: 12,

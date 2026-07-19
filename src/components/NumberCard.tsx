@@ -1,7 +1,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { CARD_COLORS, COLORS } from '../styles/colors';
+import { CARD_GRADIENTS, COLORS } from '../styles/colors';
+import { FONTS, RADIUS } from '../styles/theme';
 
 interface Props {
   value: number;
@@ -11,37 +13,40 @@ interface Props {
 
 /** Thẻ số nhỏ nhiều màu (dùng cho lưới chọn nhanh số). */
 export default function NumberCard({ value, onPress, selected }: Props) {
-  const color = CARD_COLORS[value % CARD_COLORS.length];
+  const grad = CARD_GRADIENTS[value % CARD_GRADIENTS.length];
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        { backgroundColor: color, transform: [{ scale: pressed ? 0.9 : 1 }] },
-        selected && styles.selected,
-      ]}
+      style={({ pressed }) => [styles.wrap, selected && styles.selected, { transform: [{ scale: pressed ? 0.9 : 1 }] }]}
     >
-      <Text style={styles.value}>{value}</Text>
+      <LinearGradient colors={grad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.card}>
+        <Text style={styles.value}>{value}</Text>
+      </LinearGradient>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
+  wrap: {
     width: 56,
     height: 56,
     margin: 5,
-    borderRadius: 16,
+    borderRadius: RADIUS.sm,
+  },
+  card: {
+    flex: 1,
+    borderRadius: RADIUS.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
   selected: {
     borderWidth: 4,
     borderColor: COLORS.text,
+    borderRadius: RADIUS.sm,
   },
   value: {
+    fontFamily: FONTS.display,
     fontSize: 22,
-    fontWeight: 'bold',
     color: COLORS.white,
   },
 });
