@@ -3,12 +3,15 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import Emoji from '../components/Emoji';
 import Header from '../components/Header';
 import KidButton from '../components/KidButton';
 import RewardBadge from '../components/RewardBadge';
+import ScreenBackground from '../components/ScreenBackground';
 import { RootStackParamList } from '../navigation/types';
 import { COLORS } from '../styles/colors';
 import { globalStyles } from '../styles/global';
+import { FONTS } from '../styles/theme';
 import { speak } from '../utils/speech';
 import { Achievements, EMPTY_ACHIEVEMENTS, loadAchievements, resetAchievements } from '../utils/storage';
 
@@ -21,6 +24,13 @@ const BADGES: { emoji: string; label: string; check: (a: Achievements) => boolea
   { emoji: '🧠', label: 'Siêu trí nhớ', check: a => a.gamesPlayed >= 3 },
   { emoji: '🏆', label: 'Nhà vô địch', check: a => a.correct >= 50 },
   { emoji: '🎓', label: 'Sẵn sàng lớp 1', check: a => a.stars >= 100 },
+];
+
+const STATS: { emoji: string; label: string; value: (a: Achievements) => number }[] = [
+  { emoji: '⭐', label: 'Sao thưởng', value: a => a.stars },
+  { emoji: '✅', label: 'Câu đúng', value: a => a.correct },
+  { emoji: '✏️', label: 'Lượt luyện tập', value: a => a.practiceRounds },
+  { emoji: '🎮', label: 'Lượt chơi game', value: a => a.gamesPlayed },
 ];
 
 /** Thành tích của bé: sao, số câu đúng, huy hiệu. */
@@ -48,63 +58,45 @@ export default function AchievementScreen(_props: Props) {
   }
 
   return (
-    <View style={globalStyles.screen}>
-      <Header title="Thành tích của bé" emoji="🏆" />
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.statRow}>
-          <View style={[globalStyles.card, styles.statCard]}>
-            <Text style={styles.statEmoji}>⭐</Text>
-            <Text style={styles.statValue}>{data.stars}</Text>
-            <Text style={styles.statLabel}>Sao thưởng</Text>
+    <ScreenBackground>
+      <View style={globalStyles.screen}>
+        <Header title="Thành tích của bé" emoji="🏆" />
+        <ScrollView contentContainerStyle={styles.content}>
+          <View style={styles.statGrid}>
+            {STATS.map(stat => (
+              <View key={stat.label} style={[globalStyles.card, styles.statCard]}>
+                <Emoji char={stat.emoji} size={34} />
+                <Text style={styles.statValue}>{stat.value(data)}</Text>
+                <Text style={styles.statLabel}>{stat.label}</Text>
+              </View>
+            ))}
           </View>
-          <View style={[globalStyles.card, styles.statCard]}>
-            <Text style={styles.statEmoji}>✅</Text>
-            <Text style={styles.statValue}>{data.correct}</Text>
-            <Text style={styles.statLabel}>Câu đúng</Text>
-          </View>
-        </View>
-        <View style={styles.statRow}>
-          <View style={[globalStyles.card, styles.statCard]}>
-            <Text style={styles.statEmoji}>✏️</Text>
-            <Text style={styles.statValue}>{data.practiceRounds}</Text>
-            <Text style={styles.statLabel}>Lượt luyện tập</Text>
-          </View>
-          <View style={[globalStyles.card, styles.statCard]}>
-            <Text style={styles.statEmoji}>🎮</Text>
-            <Text style={styles.statValue}>{data.gamesPlayed}</Text>
-            <Text style={styles.statLabel}>Lượt chơi game</Text>
-          </View>
-        </View>
 
-        <Text style={styles.sectionTitle}>
-          Huy hiệu của bé ({badgeCount}/{BADGES.length})
-        </Text>
-        <View style={styles.badgeGrid}>
-          {BADGES.map(badge => (
-            <RewardBadge
-              key={badge.label}
-              emoji={badge.emoji}
-              label={badge.label}
-              achieved={badge.check(data)}
-            />
-          ))}
-        </View>
+          <Text style={styles.sectionTitle}>
+            Huy hiệu của bé ({badgeCount}/{BADGES.length})
+          </Text>
+          <View style={styles.badgeGrid}>
+            {BADGES.map(badge => (
+              <RewardBadge key={badge.label} emoji={badge.emoji} label={badge.label} achieved={badge.check(data)} />
+            ))}
+          </View>
 
-        <Text style={styles.cheer}>
-          {data.correct === 0
-            ? 'Bé hãy luyện tập để nhận sao và huy hiệu nhé! 💪'
-            : 'Bé giỏi lắm, tiếp tục cố gắng nhé! 🥳'}
-        </Text>
+          <Text style={styles.cheer}>
+            {data.correct === 0
+              ? 'Bé hãy luyện tập để nhận sao và huy hiệu nhé! 💪'
+              : 'Bé giỏi lắm, tiếp tục cố gắng nhé! 🥳'}
+          </Text>
 
-        <KidButton
-          small
-          label={confirmReset ? 'Bấm lần nữa để xóa hết' : 'Bắt đầu lại từ đầu'}
-          emoji="🗑️"
-          color={confirmReset ? COLORS.wrong : COLORS.textLight}
-          onPress={onReset}
-        />
-      </ScrollView>
-    </View>
+          <KidButton
+            small
+            label={confirmReset ? 'Bấm lần nữa để xóa hết' : 'Bắt đầu lại từ đầu'}
+            emoji="🗑️"
+            color={confirmReset ? COLORS.red : COLORS.textLight}
+            onPress={onReset}
+          />
+        </ScrollView>
+      </View>
+    </ScreenBackground>
   );
 }
 
@@ -114,30 +106,31 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingBottom: 32,
   },
-  statRow: {
+  statGrid: {
     flexDirection: 'row',
-    gap: 14,
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 14,
   },
   statCard: {
-    flex: 1,
+    width: '47%',
     alignItems: 'center',
     paddingVertical: 16,
-  },
-  statEmoji: {
-    fontSize: 34,
+    gap: 2,
   },
   statValue: {
+    fontFamily: FONTS.display,
     fontSize: 32,
-    fontWeight: 'bold',
     color: COLORS.orange,
   },
   statLabel: {
+    fontFamily: FONTS.body,
     fontSize: 14,
     color: COLORS.textLight,
   },
   sectionTitle: {
+    fontFamily: FONTS.title,
     fontSize: 20,
-    fontWeight: 'bold',
     color: COLORS.text,
     textAlign: 'center',
     marginTop: 6,
@@ -149,6 +142,7 @@ const styles = StyleSheet.create({
     rowGap: 12,
   },
   cheer: {
+    fontFamily: FONTS.body,
     fontSize: 16,
     color: COLORS.textLight,
     textAlign: 'center',

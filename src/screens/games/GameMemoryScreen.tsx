@@ -1,13 +1,17 @@
 import React, { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 
+import Emoji from '../../components/Emoji';
 import Header from '../../components/Header';
 import ResultView from '../../components/ResultView';
+import ScreenBackground from '../../components/ScreenBackground';
 import { ALPHABET, Letter } from '../../data/alphabet';
 import { RootStackParamList } from '../../navigation/types';
-import { CARD_COLORS, COLORS } from '../../styles/colors';
+import { CARD_GRADIENTS, COLORS, GRADIENTS } from '../../styles/colors';
 import { globalStyles } from '../../styles/global';
+import { FONTS, RADIUS, softShadow } from '../../styles/theme';
 import { sample, shuffle } from '../../utils/random';
 import { randomPraise, speak } from '../../utils/speech';
 import { recordResult } from '../../utils/storage';
@@ -86,60 +90,76 @@ export default function GameMemoryScreen({ navigation }: Props) {
 
   if (finished) {
     return (
-      <View style={globalStyles.screen}>
-        <Header title="Lật thẻ ghi nhớ" emoji="🃏" />
-        <ResultView
-          correct={PAIRS}
-          total={PAIRS}
-          stars={stars}
-          onReplay={replay}
-          onHome={() => navigation.navigate('Home')}
-        />
-      </View>
+      <ScreenBackground>
+        <View style={globalStyles.screen}>
+          <Header title="Lật thẻ ghi nhớ" emoji="🃏" />
+          <ResultView
+            correct={PAIRS}
+            total={PAIRS}
+            stars={stars}
+            onReplay={replay}
+            onHome={() => navigation.navigate('Home')}
+          />
+        </View>
+      </ScreenBackground>
     );
   }
 
   return (
-    <View style={globalStyles.screen}>
-      <Header title="Lật thẻ ghi nhớ" emoji="🃏" />
-      <Text style={styles.hint}>Ghép chữ IN HOA với chữ in thường nhé!</Text>
-      <Text style={styles.moves}>Số lượt lật: {moves}</Text>
-      <View style={styles.grid}>
-        {cards.map((card, index) => {
-          const isUp = flipped.includes(index) || matched.includes(card.letter.upper);
-          const isMatched = matched.includes(card.letter.upper);
-          const color = CARD_COLORS[ALPHABET.indexOf(card.letter) % CARD_COLORS.length];
-          return (
-            <Pressable
-              key={card.key}
-              onPress={() => onCardPress(index)}
-              style={({ pressed }) => [
-                styles.card,
-                { backgroundColor: isUp ? color : COLORS.yellow },
-                isMatched && styles.matched,
-                pressed && !isUp && { transform: [{ scale: 0.93 }] },
-              ]}
-            >
-              <Text style={[styles.cardText, !isUp && styles.cardBack]}>
-                {isUp ? (card.face === 'upper' ? card.letter.upper : card.letter.lower) : '❓'}
-              </Text>
-            </Pressable>
-          );
-        })}
+    <ScreenBackground>
+      <View style={globalStyles.screen}>
+        <Header title="Lật thẻ ghi nhớ" emoji="🃏" />
+        <Text style={styles.hint}>Ghép chữ IN HOA với chữ in thường nhé!</Text>
+        <Text style={styles.moves}>Số lượt lật: {moves}</Text>
+        <View style={styles.grid}>
+          {cards.map((card, index) => {
+            const isUp = flipped.includes(index) || matched.includes(card.letter.upper);
+            const isMatched = matched.includes(card.letter.upper);
+            const grad = CARD_GRADIENTS[ALPHABET.indexOf(card.letter) % CARD_GRADIENTS.length];
+            return (
+              <Pressable
+                key={card.key}
+                onPress={() => onCardPress(index)}
+                style={({ pressed }) => [
+                  styles.cardWrap,
+                  softShadow('#D8C6A6', 0.35),
+                  isMatched && styles.matched,
+                  pressed && !isUp && { transform: [{ scale: 0.93 }] },
+                ]}
+              >
+                <LinearGradient
+                  colors={isUp ? grad : GRADIENTS.yellow}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.card}
+                >
+                  {isUp ? (
+                    <Text style={styles.cardText}>
+                      {card.face === 'upper' ? card.letter.upper : card.letter.lower}
+                    </Text>
+                  ) : (
+                    <Emoji char="❓" size={34} />
+                  )}
+                </LinearGradient>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
-    </View>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   hint: {
+    fontFamily: FONTS.body,
     fontSize: 16,
     color: COLORS.textLight,
     textAlign: 'center',
   },
   moves: {
+    fontFamily: FONTS.bodyExtra,
     fontSize: 18,
-    fontWeight: 'bold',
     color: COLORS.text,
     textAlign: 'center',
     marginVertical: 6,
@@ -152,28 +172,24 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     padding: 10,
   },
-  card: {
+  cardWrap: {
     width: '28%',
     aspectRatio: 0.85,
     margin: '1.5%',
-    borderRadius: 20,
+    borderRadius: RADIUS.md,
+  },
+  card: {
+    flex: 1,
+    borderRadius: RADIUS.md,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 3,
   },
   matched: {
-    opacity: 0.6,
+    opacity: 0.55,
   },
   cardText: {
+    fontFamily: FONTS.display,
     fontSize: 44,
-    fontWeight: 'bold',
     color: COLORS.white,
-  },
-  cardBack: {
-    fontSize: 34,
   },
 });

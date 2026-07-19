@@ -22,6 +22,6 @@ function makeRounds(): QuizRound[] {
 
 export default function GameFirstLetterScreen() {
   return (
-    <QuizPlay title="Hình và chữ" emoji="🖼️" makeRounds={makeRounds} kind="game" bigOptions />
+    <QuizPlay title="Hình và chữ" emoji="🖼️" makeRounds={makeRounds} kind="game" emojiOptions />
   );
 }
