@@ -1,7 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { COLORS } from '../styles/colors';
+import { COLORS, GRADIENTS } from '../styles/colors';
+import { FONTS } from '../styles/theme';
 
 interface Props {
   current: number;
@@ -14,7 +16,12 @@ export default function ProgressBar({ current, total }: Props) {
   return (
     <View style={styles.wrapper}>
       <View style={styles.track}>
-        <View style={[styles.fill, { width: `${percent}%` }]} />
+        <LinearGradient
+          colors={GRADIENTS.green}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.fill, { width: `${percent}%` }]}
+        />
       </View>
       <Text style={styles.label}>
         {current}/{total}
@@ -31,19 +38,19 @@ const styles = StyleSheet.create({
   },
   track: {
     flex: 1,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#EFE6C8',
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#EEE6D2',
     overflow: 'hidden',
   },
   fill: {
     height: '100%',
-    borderRadius: 8,
-    backgroundColor: COLORS.green,
+    borderRadius: 9,
+    minWidth: 18,
   },
   label: {
+    fontFamily: FONTS.bodyExtra,
     fontSize: 16,
-    fontWeight: 'bold',
     color: COLORS.textLight,
   },
 });

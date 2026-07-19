@@ -1,7 +1,10 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { COLORS } from '../styles/colors';
+import { COLORS, GRADIENTS } from '../styles/colors';
+import { FONTS, RADIUS, softShadow } from '../styles/theme';
+import Emoji from './Emoji';
 
 export type AnswerState = 'normal' | 'correct' | 'wrong';
 
@@ -11,13 +14,17 @@ interface Props {
   state?: AnswerState;
   disabled?: boolean;
   big?: boolean;
+  emoji?: boolean;
 }
 
-/** Ô đáp án lớn cho bé chọn; đổi màu xanh/đỏ khi trả lời. */
-export default function AnswerOption({ label, onPress, state = 'normal', disabled, big }: Props) {
-  const background =
-    state === 'correct' ? COLORS.correct : state === 'wrong' ? COLORS.wrong : COLORS.white;
-  const color = state === 'normal' ? COLORS.text : COLORS.white;
+/** Ô đáp án lớn cho bé chọn; sáng xanh (đúng) / đỏ (sai) khi trả lời. */
+export default function AnswerOption({ label, onPress, state = 'normal', disabled, big, emoji }: Props) {
+  const filled = state !== 'normal';
+  const content = emoji ? (
+    <Emoji char={label} size={big ? 54 : 42} />
+  ) : (
+    <Text style={[styles.label, big && styles.labelBig, filled && { color: COLORS.white }]}>{label}</Text>
+  );
 
   return (
     <Pressable
@@ -25,10 +32,22 @@ export default function AnswerOption({ label, onPress, state = 'normal', disable
       disabled={disabled}
       style={({ pressed }) => [
         styles.option,
-        { backgroundColor: background, transform: [{ scale: pressed ? 0.94 : 1 }] },
+        softShadow('#E3D2B4', 0.4),
+        { transform: [{ scale: pressed ? 0.95 : 1 }] },
       ]}
     >
-      <Text style={[styles.label, big && styles.labelBig, { color }]}>{label}</Text>
+      {filled ? (
+        <LinearGradient
+          colors={state === 'correct' ? GRADIENTS.green : GRADIENTS.red}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.inner}
+        >
+          {content}
+        </LinearGradient>
+      ) : (
+        <View style={[styles.inner, styles.normal]}>{content}</View>
+      )}
     </Pressable>
   );
 }
@@ -36,19 +55,27 @@ export default function AnswerOption({ label, onPress, state = 'normal', disable
 const styles = StyleSheet.create({
   option: {
     width: '47%',
+    borderRadius: RADIUS.lg,
+    marginBottom: 14,
+  },
+  inner: {
+    borderRadius: RADIUS.lg,
     paddingVertical: 20,
-    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 76,
+  },
+  normal: {
+    backgroundColor: COLORS.white,
     borderWidth: 3,
-    borderColor: '#F0E8CE',
-    marginBottom: 12,
+    borderColor: '#F2EAD5',
   },
   label: {
+    fontFamily: FONTS.display,
     fontSize: 30,
-    fontWeight: 'bold',
+    color: COLORS.text,
   },
   labelBig: {
-    fontSize: 44,
+    fontSize: 46,
   },
 });

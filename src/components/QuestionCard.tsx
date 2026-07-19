@@ -3,7 +3,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { COLORS } from '../styles/colors';
 import { globalStyles } from '../styles/global';
+import { FONTS } from '../styles/theme';
 import { speak } from '../utils/speech';
+import Emoji from './Emoji';
+import EmojiText from './EmojiText';
 
 interface Props {
   prompt: string;
@@ -18,12 +21,16 @@ export default function QuestionCard({ prompt, display }: Props) {
         <Text style={styles.prompt}>{prompt}</Text>
         <Pressable
           onPress={() => speak(prompt)}
-          style={({ pressed }) => [styles.speakButton, pressed && { opacity: 0.7 }]}
+          style={({ pressed }) => [styles.speakButton, pressed && { opacity: 0.75, transform: [{ scale: 0.94 }] }]}
         >
-          <Text style={styles.speakIcon}>🔊</Text>
+          <Emoji char="🔊" size={24} />
         </Pressable>
       </View>
-      {display ? <Text style={styles.display}>{display}</Text> : null}
+      {display ? (
+        <View style={styles.displayBox}>
+          <EmojiText text={display} size={46} />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -31,6 +38,7 @@ export default function QuestionCard({ prompt, display }: Props) {
 const styles = StyleSheet.create({
   card: {
     alignItems: 'center',
+    gap: 6,
   },
   promptRow: {
     flexDirection: 'row',
@@ -39,26 +47,20 @@ const styles = StyleSheet.create({
   },
   prompt: {
     flex: 1,
+    fontFamily: FONTS.bodyExtra,
     fontSize: 20,
-    fontWeight: 'bold',
     color: COLORS.text,
   },
   speakButton: {
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: COLORS.blue,
+    backgroundColor: '#EAF2FF',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  speakIcon: {
-    fontSize: 22,
-  },
-  display: {
-    marginTop: 14,
-    fontSize: 52,
-    textAlign: 'center',
-    color: COLORS.text,
-    fontWeight: 'bold',
+  displayBox: {
+    marginTop: 10,
+    paddingVertical: 6,
   },
 });
